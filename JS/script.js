@@ -3,8 +3,9 @@ const sendChatBtn = document.querySelector(".chat-input span");
 const chatbox = document.querySelector(".chatbox");
 
 let userMessage;
+const API_KEY = "",
 
-const createChatLi = (message, className) =>{
+const createChatLi = (message, className) => {
     // Create a chat <li> element with passed message and className
     const chatLi = document.createElement("li");
     chatLi.classList.add("chat", className);
@@ -13,12 +14,37 @@ const createChatLi = (message, className) =>{
     return chatLi;
 }
 
+const generateResponse = () => {
+
+    const API_URL = "https://api.openai.com/v1/chat/completions";
+
+    const requestOptions = {
+
+        method: "POST",
+        headers: {
+            "Content-Type": "application/js",
+            "Authorization": 'Bearer ${API_KEY}'
+        },
+
+        body: JSON.stringify({
+            "model": "gpt-3.5-turbo",
+            "messages": [{ "role": "system", "content": "You are a helpful assistant." }, { "role": "user", "content": userMessage }]
+        })
+    }
+}
+
 const handleChat = () => {
     userMessage = chatInput.value.trim();
-    if(!userMessage) return;
+    if (!userMessage) return;
 
     // Append the user's message to the chatbox
     chatbox.appendChild(createChatLi(userMessage, "outgoing"));
+
+    setTimeout(() => {
+        //display "thinking..." message while waiting for the response
+        chatbox.appendChild(createChatLi("Thinking...", "incoming"));
+        generateResponse();
+    }, 600);
 }
 
 sendChatBtn.addEventListener("click", handleChat);
