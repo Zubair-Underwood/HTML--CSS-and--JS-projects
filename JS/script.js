@@ -3,20 +3,22 @@ const sendChatBtn = document.querySelector(".chat-input span");
 const chatbox = document.querySelector(".chatbox");
 
 let userMessage;
-const API_KEY = "",
+const API_KEY = "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";
 
 const createChatLi = (message, className) => {
     // Create a chat <li> element with passed message and className
     const chatLi = document.createElement("li");
     chatLi.classList.add("chat", className);
-    let chatContent = className === "outgoing" ? '<p>${message}</p>' : '<span class="material-symbols-outlined">smart_toy</span><p>${message}</p>';
+    let chatContent = className === "outgoing" ? '<p></p>' : '<span class="material-symbols-outlined">smart_toy</span><p></p>';
     chatLi.innerHTML = chatContent;
+    chatLi.querySelector("p").textContent = message;
     return chatLi;
 }
 
-const generateResponse = () => {
+const generateResponse = (incomingChatLi) => {
 
     const API_URL = "https://api.openai.com/v1/chat/completions";
+    const messageElement = incomingChatLi.querySelector("p");
 
     const requestOptions = {
 
@@ -31,6 +33,13 @@ const generateResponse = () => {
             "messages": [{ "role": "system", "content": "You are a helpful assistant." }, { "role": "user", "content": userMessage }]
         })
     }
+
+    // Send Post request to API, get response
+    fetch(API_URL, requestOptions).then(res => res.json()).then(data =>{
+        messageElement.textContent = data.choices[0].message.content;
+    }).catch((error) =>{
+        messageElement.textContent = "Oops! Something went wrong. Please try again.";
+    }).finally(() => chatbox.scrollTo(0, chatbox.scrollHeight));
 }
 
 const handleChat = () => {
@@ -39,11 +48,14 @@ const handleChat = () => {
 
     // Append the user's message to the chatbox
     chatbox.appendChild(createChatLi(userMessage, "outgoing"));
+    chatbox.scrollTo(0, chatbox.scrollHeight);
 
     setTimeout(() => {
         //display "thinking..." message while waiting for the response
-        chatbox.appendChild(createChatLi("Thinking...", "incoming"));
-        generateResponse();
+        const incomingChatLi = createChatLi("Thinking...", "incoming")
+        chatbox.appendChild(incomingChatLi);
+        chatbox.scrollTo(0, chatbox.scrollHeight);
+        generateResponse(incomingChatLi);
     }, 600);
 }
 
